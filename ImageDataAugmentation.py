@@ -113,9 +113,9 @@ class RicapLoss(nn.Module):
 
 class RicapCallback(LearnerCallback):
     "Callback that creates the ricap input and target."
-    def __init__(self, learn:Learner, stack_y:bool=True):
+    def __init__(self, learn:Learner, β:float=.3, stack_y:bool=True):
         super().__init__(learn)
-        self.stack_y = stack_y
+        self.β,self.stack_y = β,stack_y
 
     def on_train_begin(self, **kwargs):
         if self.stack_y: self.learn.loss_func = RicapLoss(self.learn.loss_func)
@@ -124,8 +124,8 @@ class RicapCallback(LearnerCallback):
         "Applies ricap to `last_input` and `last_target` if `train`."
         if not train: return
         I_x, I_y = last_input.size()[2:]
-        w = int(np.round(I_x * np.random.beta(1, 1)))
-        h = int(np.round(I_y * np.random.beta(1, 1)))
+        w = int(np.round(I_x * np.random.beta(self.β, self.β)))
+        h = int(np.round(I_y * np.random.beta(self.β, self.β)))
         w_ = [w, I_x - w, w, I_x - w]
         h_ = [h, h, I_y - h, I_y - h]
         cropped_images = {}
